@@ -20,6 +20,8 @@ from utils.postprocessing import ProcessedResult
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.metrics import mean_absolute_error
 
+from utils.metrics import LinEx, LinLin, weighted_RMSE, RMSE
+
 from model.embed import DataEmbedding
 
 def linex_obj_and_eval(linex_weight):
@@ -115,6 +117,7 @@ class Exp_XGBoost():
             max_depth=self.args.max_depth,
             subsample=self.args.subsample,
             min_child_weight=self.args.min_child_weight,
+            colsample_bytree=self.args.colsample_bytree,
             learning_rate=self.args.learning_rate,
             objective=objective, # either 'reg:squarederror' or custom objective
             eval_metric=eval_metric, # function, e.g. from sk.metrics
@@ -155,6 +158,7 @@ class Exp_XGBoost():
         # preds = self.model.predict(
         #     np.concatenate((vali_data.matrix_x, vali_data.matrix_mark), 1)
         # )
+        
         preds = self.model.predict(vali_data.matrix_x)
         trues = vali_data.matrix_y
         
@@ -173,3 +177,42 @@ class Exp_XGBoost():
         
         print('Finished vali!')
         return
+    
+    def tune(self):
+        vali_data = self._get_data('val')
+        
+        # preds = self.model.predict(
+        #     np.concatenate((vali_data.matrix_x, vali_data.matrix_mark), 1)
+        # )
+        
+        preds = self.model.predict(vali_data.matrix_x)
+        trues = vali_data.matrix_y
+        
+        result = ProcessedResult(preds, trues, args=self.args, data=vali_data)
+        
+        # Folder for saving result
+        folder_path = './results/' + self.args.timestamp + "_" + self.args.data +'/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            
+        with open('processed_result_test.pkl', 'wb') as f:
+            pkl.dump(result, f)
+                
+        fig = result.plot_pred_vs_true(result.pred)
+        fig.savefig(folder_path + 'xgb_result.png', bbox_inches='tight')
+          
+        # Calculate vali loss for tuning
+        match self.args.loss:
+            case 'linex':
+                loss = LinEx(result.pred, result.true, self.args.linex_weight)
+            case 'w_rmse':
+                loss = weighted_RMSE(result.pred, result.true, self.args.w_rmse_weight)
+            case 'linlin':
+                loss = LinLin(result.pred, result.true, self.args.linlin_weight)
+            case 'rmse':
+                loss = RMSE(result.pred, result.true)
+                
+        # Calculate predicted revenue for tuning
+        revenue = result.predict_revenue(result.pred)
+        
+        return loss, revenue, result

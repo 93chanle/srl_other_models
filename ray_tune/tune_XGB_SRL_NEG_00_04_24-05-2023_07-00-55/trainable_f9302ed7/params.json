@@ -1,0 +1,11 @@
+{
+  "alpha": 1.6986213518712459,
+  "colsample_bytree": 0.9190927883827587,
+  "eta": 0.32585139488157006,
+  "input_len": 112,
+  "lags": 48,
+  "lambda": 1.3301296635856619,
+  "learning_rate ": 8,
+  "n_estimators": 72,
+  "subsample": 0.4903939323078701
+}

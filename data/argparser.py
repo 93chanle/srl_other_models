@@ -27,7 +27,7 @@ def args_parsing():
 
     parser.add_argument('--timestamp', type=str, default=now)
     
-    parser.add_argument('--root_path', type=str, default= 'D:\\srl_other_models\\data\\processed\\SRL\\', help='root path of the data file')
+    parser.add_argument('--root_path', type=str, default= 'data\\processed\\SRL\\', help='root path of the data file')
     parser.add_argument('--data_path', type=str, default='SRL_NEG_00_04.csv', help='data file')    
     parser.add_argument('--features', type=str, default='S', help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
     parser.add_argument('--cols', type=str, nargs='+', help='external col names from the data files as the additional input features (not including target)')
@@ -44,15 +44,16 @@ def args_parsing():
     parser.add_argument('--learning_rate', type=float, default=0.1, help='Boosting learning rate.')
     parser.add_argument('--subsample', type=float, default=1.0, help='Subsample ratio of the training instances.')
     parser.add_argument('--colsample_bytree', type=float, default=1.0, help='Subsample ratio of columns when constructing each tree.')
-    parser.add_argument('--gamma', type=float, default=0.0, help='Minimum loss reduction required to make a further partition on a leaf node of the tree.')
+    parser.add_argument('--reg_gamma', type=float, default=0.0, help='L2 regularization.')
+    parser.add_argument('--reg_alpha', type=float, default=0.0, help='L1 regularization.')
 
     # FOR TUNING
-    parser.add_argument('--tune_num_samples', type=int, default=200, help='Number of sample interations in hyperparameter tuning')
+    parser.add_argument('--tune_num_samples', type=int, default=5, help='Number of sample interations in hyperparameter tuning')
 
     args = parser.parse_args()
     
     args.root_path = os.path.normpath(args.root_path)
-        
+
     args.freq = args.freq[-1:]
 
     # Pass default values for external data incorporation

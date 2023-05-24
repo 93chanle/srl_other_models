@@ -13,17 +13,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class Dataset_XGB(Dataset):
-    def __init__(self, root_path, flag='train', size=None, train_val_test_split = [0.7, 0.15, 0.15],
+    def __init__(self, root_path, flag='train', input_len=48, target_len=1, train_val_test_split = [0.7, 0.15, 0.15],
                  features='S', data_path='SRL_NEG_00_04.csv', 
                  target='capacity_price', scale='standard', inverse=False, timeenc=0, freq='d', cols=None):
         # size [seq_len, label_len, pred_len]
         # info
-        if size == None:
-            self.input_len = 48
-            self.target_len = 1
-        else:
-            self.input_len = size[0]
-            self.target_len = size[1]
+
+        self.input_len = input_len
+        self.target_len = target_len
 
         # init
         assert flag in ['train', 'test', 'val']
