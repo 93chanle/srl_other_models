@@ -11,6 +11,12 @@ now = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
 args = args_parsing()
 
+# # DEBUGGING ONLY
+# ####
+# args.loss = 'linex'
+
+# ####
+
 exp = Exp_XGBoost(args)
 
 exp.train()

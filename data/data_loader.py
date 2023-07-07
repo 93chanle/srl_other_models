@@ -12,13 +12,91 @@ from utils.timefeatures import time_features
 import warnings
 warnings.filterwarnings('ignore')
 
+
+class Dataset_ARIMA(Dataset):
+    def __init__(self, root_path='data\processed\SRL', flag='train', train_val_test_split = [0.7, 0.15, 0.15],
+                 data_path='SRL_NEG_00_04.csv', 
+                 target='capacity_price', scale='standard', cols=None):
+        
+        # init
+        assert flag in ['train', 'test', 'val']
+        self.flag = flag
+        self.scale = scale
+        self.root_path = root_path
+        self.data_path = data_path
+        self.target = target
+        self.train_val_test_split = train_val_test_split
+        self.__read_data__()
+        
+    
+    def __read_data__(self):
+        
+        if self.scale == 'minmax':
+            self.scaler = MinMaxScaler()
+          
+        elif self.scale == 'standard':
+            self.scaler = StandardScaler()
+        
+        elif self.scale is None:
+            self.scaler = None
+            
+            
+        df_raw = pd.read_csv(os.path.join(self.root_path,
+                                                self.data_path))        
+        df_data = df_raw[[self.target]]
+            
+        assert sum(self.train_val_test_split) == 1.0
+            
+        num_vali = int(len(df_raw)*self.train_val_test_split[1])
+        num_train = int(len(df_raw)*self.train_val_test_split[0])
+
+        if self.scale == 'standard':
+            train_data = df_data[0:num_train]
+            self.scaler.fit(train_data.values)
+            data = self.scaler.transform(df_data.values)
+        elif self.scale is None:
+            data = df_data.values #np.array
+
+        # data_list = {
+        #     "train": df_data.iloc[:num_train]['capacity_price'].values.tolist(),
+        #     "val": df_data.iloc[num_train:num_train+num_vali]['capacity_price'].values.tolist(),
+        #     "test": df_data.iloc[num_train+num_vali:]['capacity_price'].values.tolist(),
+        # }
+        
+        data_list = {
+            "train": data[:num_train],
+            "val": data[num_train:num_train+num_vali],
+            "test": data[num_train+num_vali:],
+        }
+        
+        date_list = {
+            "train": df_raw['date'].values[:num_train],
+            "val": df_raw['date'].values[num_train:num_train+num_vali],
+            "test": df_raw['date'].values[num_train+num_vali:],
+        }
+        
+        self.data = data_list[self.flag].reshape(-1)
+        self.date = date_list[self.flag].reshape(-1)
+                
+    def __getitem__(self, index):
+        
+        return self.data[index]
+    
+        
+
+
 class Dataset_XGB(Dataset):
-    def __init__(self, root_path, flag='train', input_len=48, target_len=1, train_val_test_split = [0.7, 0.15, 0.15],
+    def __init__(self, root_path, data = 'SRL_NEG_00_04', flag='train', input_len=48, target_len=1, train_val_test_split = [0.7, 0.15, 0.15],
                  features='S', data_path='SRL_NEG_00_04.csv', 
                  target='capacity_price', scale='standard', inverse=False, timeenc=0, freq='d', cols=None):
         # size [seq_len, label_len, pred_len]
         # info
 
+        if data is not None:
+            self.data_path = f'{data}.csv'
+        else:
+            self.data_path = data_path
+        
         self.input_len = input_len
         self.target_len = target_len
 
@@ -38,7 +116,6 @@ class Dataset_XGB(Dataset):
         self.freq = freq
         self.cols=cols
         self.root_path = root_path
-        self.data_path = data_path
         self.train_val_test_split = train_val_test_split
         self.__read_data__()
 

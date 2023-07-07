@@ -8,10 +8,13 @@ from utils.tools import add_line_breaks_to_args_string
 
 
 class ProcessedResult():
-    def __init__(self, preds, trues, args, data):
+    def __init__(self, preds, trues, args, data, flag='vali'):
         self.args = args
         self.num_pred = preds.shape[0]
         self.data = data
+        
+        assert flag in ['vali', 'test']
+        self.flag = flag
         self.pred_raw = self.convert_seq(preds, inverse=False)
         self.true_raw = self.convert_seq(trues, inverse=False)
         self.pred = self.convert_seq(preds, inverse=True)
@@ -87,7 +90,7 @@ class ProcessedResult():
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
         # Title
-        ax.set_title(f'Product {self.args.data}, {self.data.target_date_range.iloc[0]._date_repr} to {self.data.target_date_range.iloc[-1]._date_repr} (Validation Set)') # Get string representation
+        ax.set_title(f'Product {self.args.data}, {self.data.target_date_range.iloc[0]._date_repr} to {self.data.target_date_range.iloc[-1]._date_repr} ({self.flag.capitalize()} Set)') # Get string representation
         plt.close()
         return(fig)
     
