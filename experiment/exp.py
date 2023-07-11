@@ -4,8 +4,6 @@ import torch
 import yaml
 import pickle as pkl
 
-from model.embed import DataEmbedding
-
 import xgboost as xgb
 
 from data.argparser import args_parsing
@@ -25,7 +23,6 @@ from utils.metrics import LinEx, LinLin, weighted_RMSE, RMSE
 from utils.metrics import linex_objective, linlin_objective, w_rmse_objective
 from utils.metrics import linex_eval_metric, linlin_eval_metric, w_rmse_eval_metric
 
-from model.embed import DataEmbedding
 from functools import partial
 
 # def objectives(loss, pred, true, *kwargs):
@@ -204,6 +201,7 @@ class Exp_XGBoost():
         
         data_set = Dataset_XGB(
             root_path=self.args.root_path,
+            data=self.args.data,
             data_path=self.args.data_path,
             flag=flag,
             input_len=self.args.input_len,
@@ -212,7 +210,7 @@ class Exp_XGBoost():
             target='capacity_price',
             timeenc=1,
             freq='d',
-            scale='standard',
+            scale=self.args.scale,
             cols=None
         )
         
@@ -300,6 +298,8 @@ class Exp_XGBoost():
         preds = self.model.predict(vali_data.matrix_x)
         trues = vali_data.matrix_y
         
+        loss = RMSE(preds, trues)
+        
         result = ProcessedResult(preds, trues, args=self.args, data=vali_data)
         
         # # Folder for saving result
@@ -314,15 +314,17 @@ class Exp_XGBoost():
         # fig.savefig(folder_path + 'xgb_result.png', bbox_inches='tight')
           
         # Calculate vali loss for tuning
-        match self.args.loss:
-            case 'linex':
-                loss = LinEx(result.pred, result.true, self.args.linex_weight)
-            case 'w_rmse':
-                loss = weighted_RMSE(result.pred, result.true, self.args.w_rmse_weight)
-            case 'linlin':
-                loss = LinLin(result.pred, result.true, self.args.linlin_weight)
-            case 'rmse':
-                loss = RMSE(result.pred, result.true)
+        # match self.args.loss:
+        #     case 'linex':
+        #         loss = LinEx(result.pred, result.true, self.args.linex_weight)
+        #     case 'w_rmse':
+        #         loss = weighted_RMSE(result.pred, result.true, self.args.w_rmse_weight)
+        #     case 'linlin':
+        #         loss = LinLin(result.pred, result.true, self.args.linlin_weight)
+        #     case 'rmse':
+        #         loss = RMSE(result.pred, result.true)
+        
+        # loss = RMSE(result.pred, result.true)
                 
         # Calculate predicted revenue for tuning
         revenue = result.predict_revenue(result.pred)

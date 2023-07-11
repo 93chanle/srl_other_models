@@ -50,7 +50,7 @@ def args_parsing():
     # FOR TUNING
     parser.add_argument('--tune_num_samples', type=int, default=5, help='Number of sample interations in hyperparameter tuning')
 
-    args = parser.parse_args()
+    args = parser.parse_args("")
     
     args.root_path = os.path.normpath(args.root_path)
 

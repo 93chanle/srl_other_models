@@ -81,9 +81,6 @@ class Dataset_ARIMA(Dataset):
     def __getitem__(self, index):
         
         return self.data[index]
-    
-        
-
 
 class Dataset_XGB(Dataset):
     def __init__(self, root_path, data = 'SRL_NEG_00_04', flag='train', input_len=48, target_len=1, train_val_test_split = [0.7, 0.15, 0.15],
@@ -159,7 +156,7 @@ class Dataset_XGB(Dataset):
         num_vali = int(len(df_raw)*self.train_val_test_split[1])
         num_train = len(df_raw) - num_vali - num_test - self.input_len - self.target_len
         
-        if self.scale == 'standard':
+        if self.scale in ['standard', 'minmax']:
             train_data = df_data[0:num_train+self.input_len]
             self.scaler.fit(train_data.values)
             data = self.scaler.transform(df_data.values)

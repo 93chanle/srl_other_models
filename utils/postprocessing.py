@@ -23,7 +23,7 @@ class ProcessedResult():
         
     
     def convert_seq(self, seq_raw, inverse=True):
-        if inverse: 
+        if inverse and self.args.scale in ['standard', 'minmax']:
             seq = self.data.scaler.inverse_transform(seq_raw)
         else: seq = seq_raw
         

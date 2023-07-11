@@ -1,10 +1,10 @@
 import numpy as np
 
 def MSE(pred, true):
-    return np.mean((pred-true)**2).round(2)
+    return np.mean((pred-true)**2)
 
 def RMSE(pred, true):
-    return np.sqrt(MSE(pred, true))
+    return round(np.sqrt(MSE(pred, true)), 2)
 
 def weighted_RMSE(pred, true, w_rmse_weight):
     diff = pred - true
@@ -25,7 +25,6 @@ def predicted_revenue(pred, true):
     pred_non_neg = np.where(pred < 0, 0, pred)
     return np.nansum(np.where(pred_non_neg > true, 0, pred_non_neg)).round(2)
 
-
 def linex_objective(pred, true, linex_weight):
     diff = pred - true # this order matters
     grad = -(2/linex_weight) * ( np.exp(linex_weight * diff) - 1)
@@ -37,9 +36,7 @@ def linex_eval_metric(pred, true, linex_weight):
     loss = (2/np.power(linex_weight, 2))*(np.exp(linex_weight*diff)- linex_weight*diff - 1)
     return np.sqrt((loss).mean()).round(2)
 
-
 def w_rmse_objective(pred, true, w_rmse_weight):
-    
     diff = pred - true
     weights = np.where(diff >= 0, w_rmse_weight, 1)
     
