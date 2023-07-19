@@ -252,6 +252,25 @@ class Exp_XGBoost():
         print('Finished vali!')
         return
     
+    def plot_vali(self):
+        vali_data = self._get_data('val')
+        
+        # preds = self.model.predict(
+        #     np.concatenate((vali_data.matrix_x, vali_data.matrix_mark), 1)
+        # )
+        
+        preds = self.model.predict(vali_data.matrix_x)
+        trues = vali_data.matrix_y
+        
+        result = ProcessedResult(preds, trues, args=self.args, data=vali_data)
+        result.model = self.model
+                 
+        fig = result.plot_pred_vs_true(result.pred)
+        
+        fig.show()
+        
+        return fig, result
+    
     def test(self):
         train_data = self._get_data('train')
         vali_data = self._get_data('val')
@@ -298,7 +317,7 @@ class Exp_XGBoost():
         preds = self.model.predict(vali_data.matrix_x)
         trues = vali_data.matrix_y
         
-        loss = RMSE(preds, trues)
+        # loss = RMSE(preds, trues)
         
         result = ProcessedResult(preds, trues, args=self.args, data=vali_data)
         
@@ -314,15 +333,15 @@ class Exp_XGBoost():
         # fig.savefig(folder_path + 'xgb_result.png', bbox_inches='tight')
           
         # Calculate vali loss for tuning
-        # match self.args.loss:
-        #     case 'linex':
-        #         loss = LinEx(result.pred, result.true, self.args.linex_weight)
-        #     case 'w_rmse':
-        #         loss = weighted_RMSE(result.pred, result.true, self.args.w_rmse_weight)
-        #     case 'linlin':
-        #         loss = LinLin(result.pred, result.true, self.args.linlin_weight)
-        #     case 'rmse':
-        #         loss = RMSE(result.pred, result.true)
+        match self.args.loss:
+            case 'linex':
+                loss = LinEx(result.pred, result.true, self.args.linex_weight)
+            case 'w_rmse':
+                loss = weighted_RMSE(result.pred, result.true, self.args.w_rmse_weight)
+            case 'linlin':
+                loss = LinLin(result.pred, result.true, self.args.linlin_weight)
+            case 'rmse':
+                loss = RMSE(result.pred, result.true)
         
         # loss = RMSE(result.pred, result.true)
                 

@@ -1,0 +1,17 @@
+Failure # 1 (occurred at 2023-07-19_16-54-17)
+Traceback (most recent call last):
+  File "C:\Users\cle\AppData\Local\miniforge3\envs\test\lib\site-packages\ray\tune\execution\ray_trial_executor.py", line 1231, in get_next_executor_event
+    future_result = ray.get(ready_future)
+  File "C:\Users\cle\AppData\Local\miniforge3\envs\test\lib\site-packages\ray\_private\client_mode_hook.py", line 105, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\cle\AppData\Local\miniforge3\envs\test\lib\site-packages\ray\_private\worker.py", line 2523, in get
+    raise value
+ray.exceptions.RayActorError: The actor died unexpectedly before finishing this task.
+	class_name: ImplicitFunc
+	actor_id: d69d05966e2fe313b439c3c001000000
+	pid: 17324
+	namespace: 1490de60-3055-4b7f-a9d3-0f901c1bc713
+	ip: 127.0.0.1
+The actor is dead because its owner has died. Owner Id: 01000000ffffffffffffffffffffffffffffffffffffffffffffffff Owner Ip address: 127.0.0.1 Owner worker exit type: SYSTEM_ERROR Worker exit detail: Owner's node has crashed.
+The actor never ran - it was cancelled before it started running.
+
