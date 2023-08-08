@@ -1,4 +1,6 @@
 import numpy as np
+import torch
+import torch.nn as nn
 
 def MSE(pred, true):
     return np.mean((pred-true)**2)
@@ -72,3 +74,60 @@ def linlin_eval_metric(pred, true, linlin_weight):
     loss = np.where(diff < 0, -diff*linlin_weight, diff*(1-linlin_weight))
     return loss.mean()
         
+class WeightedRMSE(nn.Module):
+    '''
+    alpha: weight parameter to penalize more when pred > true
+    '''
+    def __init__(self, wrmse_weight):
+        super(WeightedRMSE, self).__init__()
+        self.wrmse_weight = wrmse_weight
+    
+    def forward(self, pred, true):
+        diff = pred - true
+        weighted_diff = torch.where(diff > 0, diff*self.wrmse_weight, diff)
+        return torch.sqrt((weighted_diff**2).mean())
+    
+class LinLinLoss(nn.Module):
+    '''
+    alpha: weight parameter to penalize more when pred > true
+    '''
+    def __init__(self, linlin_weight):
+        super(LinLinLoss, self).__init__()
+        self.linlin_weight = linlin_weight # prob of underforcast, 1- : overforecast
+    
+    def forward(self, pred, true):
+        diff = pred - true
+        weighted_diff = torch.where(diff < 0, -diff*self.linlin_weight, diff*(1-self.linlin_weight))
+        return weighted_diff.mean() # MAE?
+     
+class LinExLoss(nn.Module):
+    def __init__(self, linex_weight):
+        super(LinExLoss, self).__init__()
+        self.linex_weight = linex_weight
+    
+    def forward(self, pred, true):
+        diff = pred - true # this order matters
+        linex_weight = torch.tensor(self.linex_weight)
+        a = (2/torch.pow(linex_weight, 2))
+        b = (torch.exp(linex_weight*diff)- linex_weight*diff - 1)
+        loss = (2/torch.pow(linex_weight, 2))*(torch.exp(linex_weight*diff)- linex_weight*diff - 1)
+        return torch.sqrt((loss).mean())
+
+class PositiveMSE(nn.Module):
+    def __init__(self):
+        super(PositiveMSE, self).__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, pred, true):
+        mse_loss = self.mse(pred, true)
+        neg_loss = torch.mean(torch.abs(torch.min(pred, torch.zeros_like(pred))))
+        return mse_loss + neg_loss
+    
+class MSLELoss(nn.Module):
+    def __init__(self):
+        super(MSLELoss, self).__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, pred, true):
+        return self.mse(torch.log(pred + 1), torch.log(true + 1))
+
